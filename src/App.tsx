@@ -1,27 +1,46 @@
-import { useState } from 'react'
-import { BrowserRouter, Route, Routes } from 'react-router-dom'
-import Add from './admin/add'
-import Admin from './admin/admin'
-import Update from './admin/update'
-import Signup from './home/signup'
-function App() {
-  const [count, setCount] = useState(0)
+import React from 'react';
+import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import { Layout } from 'antd';
 
+import './App.css';
+import Sidebar from './components/Sidebar';
+import Dashboard from './pages/Dashboard';
+import Login from './pages/Login';
+import TaskComments from './pages/TaskComments';
+import UserManagement from './pages/UserManagement';
+import TaskManagement from './pages/TaskManagement';
+import TaskDetails from './pages/TaskDetails';
+import TransactionHistory from './pages/TransactionHistory';
+import PerformanceReport from './pages/PerformanceReport';
+import RegisterUser from './pages/RegisterUser';
+import AssignTask from './pages/AssignTask';
+
+const { Content } = Layout;
+
+const App = () => {
   return (
-    <BrowserRouter>
-      <Routes>
-        <Route path='/auth/admin' element={<Admin />} />
-        <Route path='/auth/admin/add' element={<Add />} />
-        <Route path='/auth/admin/update/:id' element={<Update />} />
-        <Route path='/signup' element={<Signup/> } />
-        
-        
-        
+    <Router>
+      <Layout style={{ minHeight: '100vh' }}>
+        <Sidebar />
+        <Layout>
+          <Content style={{ padding: '20px' }}>
+            <Routes>
+              <Route path="/" element={<Dashboard />} />
+              <Route path="/user-management" element={<UserManagement />} />
+              <Route path="/task-management" element={<TaskManagement />} />
+              <Route path="/task-details" element={<TaskDetails />} />
+              <Route path="/task-comments" element={<TaskComments />} />
+              <Route path="/transaction-history" element={<TransactionHistory />} />
+              <Route path="/performance-report" element={<PerformanceReport />} />
+              <Route path="/assign-task" element={<AssignTask />} />
+              <Route path="/login" element={<Login />} />
+              <Route path="/register" element={<RegisterUser />} />
+            </Routes>
+          </Content>
+        </Layout>
+      </Layout>
+    </Router>
+  );
+};
 
-    </Routes>
-    
-    </BrowserRouter>
-  )
-}
-
-export default App
+export default App;
