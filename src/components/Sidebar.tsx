@@ -62,6 +62,7 @@ const Sidebar: React.FC = () => {
 
   // Chọn menu items dựa trên vai trò
   const getMenuItems = () => {
+    return adminItems;
     switch (userRole) {
       case 'admin':
         return adminItems;

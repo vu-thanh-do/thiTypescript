@@ -1,63 +1,34 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, Button, Typography, Alert, Row, Col, Divider, Space } from 'antd';
 import { WalletOutlined, LinkOutlined, ExclamationCircleOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
+import { useBlockchain } from '../contexts/BlockchainContext';
 
 const { Title, Paragraph, Text } = Typography;
 
 const Login: React.FC = () => {
-  const [isConnecting, setIsConnecting] = useState(false);
-  const [walletAddress, setWalletAddress] = useState<string | null>(null);
+  const { connectWallet, isConnected, walletAddress, loading } = useBlockchain();
   const [networkStatus, setNetworkStatus] = useState<'connected' | 'wrong_network' | 'disconnected'>('disconnected');
   const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
 
-  // Giả định: kết nối với MetaMask
-  const connectWallet = async () => {
-    setIsConnecting(true);
+  useEffect(() => {
+    if (isConnected && walletAddress) {
+      navigate('/');
+    }
+  }, [isConnected, walletAddress, navigate]);
+
+  // Xử lý kết nối ví
+  const handleConnectWallet = async () => {
     setError(null);
-
     try {
-      // Giả định: đây là nơi bạn sẽ thêm logic để kết nối với MetaMask
-      // Ví dụ:
-      /*
-      if (window.ethereum) {
-        const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
-        setWalletAddress(accounts[0]);
-        
-        // Kiểm tra mạng
-        const chainId = await window.ethereum.request({ method: 'eth_chainId' });
-        if (chainId === '0x1') { // Mainnet Ethereum
-          setNetworkStatus('connected');
-          localStorage.setItem('walletAddress', accounts[0]);
-          // Giả định: kiểm tra nếu người dùng có trong hệ thống
-          // Nếu có, lưu vai trò và điều hướng đến trang chính
-          localStorage.setItem('userRole', 'admin'); // Ví dụ vai trò
-          navigate('/');
-        } else {
-          setNetworkStatus('wrong_network');
-        }
-      } else {
-        throw new Error('MetaMask không được tìm thấy');
-      }
-      */
-
-      // Mã giả để mô phỏng kết nối thành công
-      setTimeout(() => {
-        const mockAddress = '0x1234...5678';
-        setWalletAddress(mockAddress);
-        setNetworkStatus('connected');
-        localStorage.setItem('walletAddress', mockAddress);
-        localStorage.setItem('userRole', 'admin'); // Ví dụ vai trò
-        navigate('/');
-        setIsConnecting(false);
-      }, 1500);
+      await connectWallet();
+      setNetworkStatus('connected');
     } catch (err) {
       setError((err as Error).message);
-      setIsConnecting(false);
     }
   };
-
+  console.log(networkStatus, 'networkStatus');
   const getNetworkStatusMessage = () => {
     switch (networkStatus) {
       case 'connected':
@@ -109,16 +80,16 @@ const Login: React.FC = () => {
 
             <Divider />
 
-            <Button 
-              type="primary" 
-              icon={<LinkOutlined />} 
-              size="large" 
-              block 
-              onClick={connectWallet}
-              loading={isConnecting}
-              disabled={networkStatus === 'connected'}
+            <Button
+              type="primary"
+              icon={<LinkOutlined />}
+              size="large"
+              block
+              onClick={handleConnectWallet}
+              loading={loading}
+              disabled={isConnected}
             >
-              {isConnecting ? 'Đang kết nối...' : walletAddress ? 'Đã kết nối' : 'Kết nối với MetaMask'}
+              {loading ? 'Đang kết nối...' : walletAddress ? 'Đã kết nối' : 'Kết nối với MetaMask'}
             </Button>
 
             <Paragraph style={{ textAlign: 'center', fontSize: 12, marginTop: 16 }}>

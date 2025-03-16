@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { Typography, Row, Col, Card, Statistic, Table, List, Tag, Divider, Button } from 'antd';
-import { 
-  UserOutlined, 
-  ClockCircleOutlined, 
-  CheckCircleOutlined, 
+import {
+  UserOutlined,
+  ClockCircleOutlined,
+  CheckCircleOutlined,
   SyncOutlined,
-  ExclamationCircleOutlined, 
-  ArrowUpOutlined, 
+  ExclamationCircleOutlined,
+  ArrowUpOutlined,
   TeamOutlined
 } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
@@ -93,41 +93,41 @@ const Dashboard: React.FC = () => {
       <Row gutter={[16, 16]}>
         <Col xs={24} sm={12} md={6}>
           <Card>
-            <Statistic 
-              title="Tổng số Task" 
-              value={totalTasks} 
-              valueStyle={{ color: '#1890ff' }} 
-              prefix={<ExclamationCircleOutlined />} 
+            <Statistic
+              title="Tổng số Task"
+              value={totalTasks}
+              valueStyle={{ color: '#1890ff' }}
+              prefix={<ExclamationCircleOutlined />}
             />
           </Card>
         </Col>
         <Col xs={24} sm={12} md={6}>
           <Card>
-            <Statistic 
-              title="Hoàn thành" 
-              value={completedTasks} 
-              valueStyle={{ color: '#3f8600' }} 
-              prefix={<CheckCircleOutlined />} 
+            <Statistic
+              title="Hoàn thành"
+              value={completedTasks}
+              valueStyle={{ color: '#3f8600' }}
+              prefix={<CheckCircleOutlined />}
             />
           </Card>
         </Col>
         <Col xs={24} sm={12} md={6}>
           <Card>
-            <Statistic 
-              title="Đang xử lý" 
-              value={inProgressTasks} 
-              valueStyle={{ color: '#1890ff' }} 
-              prefix={<SyncOutlined spin />} 
+            <Statistic
+              title="Đang xử lý"
+              value={inProgressTasks}
+              valueStyle={{ color: '#1890ff' }}
+              prefix={<SyncOutlined spin />}
             />
           </Card>
         </Col>
         <Col xs={24} sm={12} md={6}>
           <Card>
-            <Statistic 
-              title="Tổng số người dùng" 
-              value={totalUsers} 
-              valueStyle={{ color: '#722ed1' }} 
-              prefix={<TeamOutlined />} 
+            <Statistic
+              title="Tổng số người dùng"
+              value={totalUsers}
+              valueStyle={{ color: '#722ed1' }}
+              prefix={<TeamOutlined />}
             />
           </Card>
         </Col>
@@ -175,28 +175,28 @@ const Dashboard: React.FC = () => {
       <Row gutter={[16, 16]}>
         <Col xs={24} sm={8}>
           <Card>
-            <Statistic 
-              title="Tổng số Task" 
-              value={totalTasks} 
-              valueStyle={{ color: '#1890ff' }} 
+            <Statistic
+              title="Tổng số Task"
+              value={totalTasks}
+              valueStyle={{ color: '#1890ff' }}
             />
           </Card>
         </Col>
         <Col xs={24} sm={8}>
           <Card>
-            <Statistic 
-              title="Đang thực hiện" 
-              value={inProgressTasks} 
-              valueStyle={{ color: '#faad14' }} 
+            <Statistic
+              title="Đang thực hiện"
+              value={inProgressTasks}
+              valueStyle={{ color: '#faad14' }}
             />
           </Card>
         </Col>
         <Col xs={24} sm={8}>
           <Card>
-            <Statistic 
-              title="Hoàn thành" 
-              value={completedTasks} 
-              valueStyle={{ color: '#3f8600' }} 
+            <Statistic
+              title="Hoàn thành"
+              value={completedTasks}
+              valueStyle={{ color: '#3f8600' }}
               suffix={<div style={{ fontSize: '15px' }}>/{totalTasks}</div>}
               prefix={<ArrowUpOutlined />}
             />
@@ -243,28 +243,28 @@ const Dashboard: React.FC = () => {
       <Row gutter={[16, 16]}>
         <Col xs={24} sm={8}>
           <Card>
-            <Statistic 
-              title="Task được giao" 
-              value={3} 
-              valueStyle={{ color: '#1890ff' }} 
+            <Statistic
+              title="Task được giao"
+              value={3}
+              valueStyle={{ color: '#1890ff' }}
             />
           </Card>
         </Col>
         <Col xs={24} sm={8}>
           <Card>
-            <Statistic 
-              title="Đang thực hiện" 
-              value={1} 
-              valueStyle={{ color: '#faad14' }} 
+            <Statistic
+              title="Đang thực hiện"
+              value={1}
+              valueStyle={{ color: '#faad14' }}
             />
           </Card>
         </Col>
         <Col xs={24} sm={8}>
           <Card>
-            <Statistic 
-              title="Đã hoàn thành" 
-              value={2} 
-              valueStyle={{ color: '#3f8600' }} 
+            <Statistic
+              title="Đã hoàn thành"
+              value={2}
+              valueStyle={{ color: '#3f8600' }}
             />
           </Card>
         </Col>
@@ -307,6 +307,7 @@ const Dashboard: React.FC = () => {
 
   // Hiển thị dashboard dựa trên vai trò
   const renderDashboard = () => {
+    return renderAdminDashboard();
     switch (userRole) {
       case 'admin':
         return renderAdminDashboard();
@@ -329,9 +330,9 @@ const Dashboard: React.FC = () => {
   return (
     <div className="dashboard-container">
       <Title level={2}>
-        {userRole === 'admin' ? 'Dashboard Admin' : 
-         userRole === 'teamLead' ? 'Dashboard Team Lead' : 
-         userRole === 'employee' ? 'Dashboard Employee' : 'Welcome'}
+        {userRole === 'admin' ? 'Dashboard Admin' :
+          userRole === 'teamLead' ? 'Dashboard Team Lead' :
+            userRole === 'employee' ? 'Dashboard Employee' : 'Welcome'}
       </Title>
       <Paragraph>
         {userRole !== 'guest' ? 'Xem tóm tắt công việc và hoạt động gần đây của bạn' : 'Vui lòng đăng nhập để tiếp tục'}

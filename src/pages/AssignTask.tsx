@@ -1,14 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  Typography, 
-  Card, 
-  Form, 
-  Select, 
-  Button, 
-  DatePicker, 
-  Descriptions, 
-  Space, 
-  Spin, 
+import {
+  Typography,
+  Card,
+  Form,
+  Select,
+  Button,
+  DatePicker,
+  Descriptions,
+  Space,
+  Spin,
   Empty,
   message,
   Divider,
@@ -18,41 +18,25 @@ import {
   Avatar,
   Result
 } from 'antd';
-import { 
-  UserOutlined, 
-  CheckCircleOutlined, 
+import {
+  UserOutlined,
+  CheckCircleOutlined,
   SendOutlined,
   TeamOutlined
 } from '@ant-design/icons';
 import { useNavigate, useLocation } from 'react-router-dom';
 import moment from 'moment';
+import { useBlockchain } from '../contexts/BlockchainContext';
+import { Task, User } from '../contexts/BlockchainContext';
 
 const { Title, Text, Paragraph } = Typography;
 const { Option } = Select;
 
-interface Task {
-  id: string;
-  title: string;
-  description: string;
-  status: 'pending' | 'in_progress' | 'completed';
-  priority: 'low' | 'medium' | 'high';
-  createdBy: string;
-  createdAt: string;
-}
-
-interface User {
-  id: string;
-  username: string;
-  walletAddress: string;
-  role: 'admin' | 'teamLead' | 'employee';
-  assignedTasksCount: number;
-}
-
 const AssignTask: React.FC = () => {
-  const [task, setTask] = useState<Task | null>(null);
-  const [users, setUsers] = useState<User[]>([]);
+  const { tasks, users, loading, assignTask } = useBlockchain();
+  const [currentTask, setCurrentTask] = useState<Task | null>(null);
+  const [eligibleUsers, setEligibleUsers] = useState<User[]>([]);
   const [submitting, setSubmitting] = useState(false);
-  const [loading, setLoading] = useState(true);
   const [success, setSuccess] = useState(false);
   const [form] = Form.useForm();
   const navigate = useNavigate();
@@ -63,176 +47,117 @@ const AssignTask: React.FC = () => {
 
   useEffect(() => {
     if (taskId) {
-      fetchTaskDetails(taskId);
-      fetchAvailableUsers();
-    } else {
-      // Nếu không có taskId, hiển thị form chọn task
-      setLoading(false);
+      findTask(taskId);
+      findEligibleUsers();
     }
-  }, [taskId]);
+  }, [taskId, tasks, users]);
 
-  const fetchTaskDetails = async (id: string) => {
-    try {
-      // Giả định: Đây là nơi bạn sẽ gọi API hoặc blockchain để lấy chi tiết task
-      // Ví dụ:
-      /*
-      const taskData = await contractInstance.getTaskById(id);
-      setTask({
-        id: taskData.id,
-        title: taskData.title,
-        description: taskData.description,
-        status: taskData.status,
-        priority: taskData.priority,
-        createdBy: taskData.createdBy,
-        createdAt: new Date(taskData.createdAt * 1000).toLocaleString()
-      });
-      */
-
-      // Dữ liệu mẫu
-      setTimeout(() => {
-        const mockTask: Task = {
-          id,
-          title: 'Implement Smart Contract',
-          description: 'Create and deploy the main task management smart contract',
-          status: 'pending' as 'pending',
-          priority: 'high',
-          createdBy: 'Admin',
-          createdAt: '01/03/2023'
-        };
-        setTask(mockTask);
-        setLoading(false);
-      }, 1000);
-    } catch (error) {
-      message.error('Lỗi khi tải chi tiết task');
-      setLoading(false);
+  // Tìm task từ danh sách tasks
+  const findTask = (id: string) => {
+    const task = tasks.find(t => t.id === id);
+    if (task) {
+      setCurrentTask(task);
     }
   };
 
-  const fetchAvailableUsers = async () => {
-    try {
-      // Giả định: Đây là nơi bạn sẽ gọi API hoặc blockchain để lấy danh sách người dùng
-      // Ví dụ:
-      /*
-      const userData = await contractInstance.getAvailableEmployees();
-      setUsers(userData.map(user => ({
-        id: user.id,
-        username: user.username,
-        walletAddress: user.walletAddress,
-        role: user.role,
-        assignedTasksCount: user.assignedTasksCount
-      })));
-      */
-
-      // Dữ liệu mẫu
-      const mockUsers: User[] = [
-        {
-          id: '1',
-          username: 'Alice',
-          walletAddress: '0xabcd...efgh',
-          role: 'employee',
-          assignedTasksCount: 2
-        },
-        {
-          id: '2',
-          username: 'Bob',
-          walletAddress: '0x9876...5432',
-          role: 'employee',
-          assignedTasksCount: 1
-        },
-        {
-          id: '3',
-          username: 'Charlie',
-          walletAddress: '0xijkl...mnop',
-          role: 'employee',
-          assignedTasksCount: 3
-        },
-        {
-          id: '4',
-          username: 'David',
-          walletAddress: '0x2468...1357',
-          role: 'employee',
-          assignedTasksCount: 0
-        }
-      ];
-      setUsers(mockUsers);
-    } catch (error) {
-      message.error('Lỗi khi tải danh sách người dùng');
-    }
+  // Tìm danh sách người dùng có thể được giao task (employees)
+  const findEligibleUsers = () => {
+    const employees = users.filter(user =>
+      user.role === 'employee' && user.status === 'active'
+    );
+    setEligibleUsers(employees);
   };
 
+  // Xử lý phân công task
   const handleAssignTask = async (values: any) => {
+    if (!currentTask) return;
+
     setSubmitting(true);
-
     try {
-      // Giả định: Đây là nơi bạn sẽ gọi API hoặc blockchain để phân công task
-      // Ví dụ:
-      /*
-      const transaction = await contractInstance.assignTask(
-        task?.id || values.taskId,
-        values.assignee,
-        Math.floor(new Date(values.deadline).getTime() / 1000)
-      );
-      await transaction.wait();
-      */
-
-      // Mô phỏng phân công thành công
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
+      await assignTask(currentTask.id, values.assignee);
       setSuccess(true);
-      message.success('Phân công task thành công');
+      message.success('Phân công nhiệm vụ thành công!');
 
       // Sau 2 giây, chuyển về trang quản lý task
       setTimeout(() => {
         navigate('/task-management');
       }, 2000);
     } catch (error) {
-      message.error('Lỗi khi phân công task');
+      console.error('Lỗi phân công task:', error);
+      message.error('Không thể phân công nhiệm vụ!');
     } finally {
       setSubmitting(false);
     }
   };
 
+  // Hiển thị chi tiết task
   const renderTaskDetailsCard = () => {
-    if (!task) return null;
+    if (!currentTask) return null;
 
     return (
-      <Card title="Thông tin Task" type="inner">
+      <Card title="Thông tin nhiệm vụ" type="inner">
         <Descriptions column={1} bordered>
-          <Descriptions.Item label="ID">{task.id}</Descriptions.Item>
-          <Descriptions.Item label="Tiêu đề">{task.title}</Descriptions.Item>
-          <Descriptions.Item label="Mô tả">{task.description}</Descriptions.Item>
-          <Descriptions.Item label="Mức độ ưu tiên">
-            <Tag color={
-              task.priority === 'high' ? 'red' : 
-              task.priority === 'medium' ? 'blue' : 'green'
-            }>
-              {task.priority === 'high' ? 'Cao' : 
-               task.priority === 'medium' ? 'Trung bình' : 'Thấp'}
-            </Tag>
+          <Descriptions.Item label="ID">{currentTask.id}</Descriptions.Item>
+          <Descriptions.Item label="Tiêu đề">{currentTask.title}</Descriptions.Item>
+          <Descriptions.Item label="Mô tả">{currentTask.description}</Descriptions.Item>
+          <Descriptions.Item label="Trạng thái">
+            <Tag color={getStatusColor(currentTask.status)}>{getStatusText(currentTask.status)}</Tag>
           </Descriptions.Item>
-          <Descriptions.Item label="Người tạo">{task.createdBy}</Descriptions.Item>
-          <Descriptions.Item label="Ngày tạo">{task.createdAt}</Descriptions.Item>
+          <Descriptions.Item label="Người tạo">
+            {getUsernameFromAddress(currentTask.createdBy)}
+          </Descriptions.Item>
+          <Descriptions.Item label="Ngày tạo">{currentTask.createdAt}</Descriptions.Item>
         </Descriptions>
       </Card>
     );
+  };
+
+  // Chuyển đổi trạng thái thành văn bản
+  const getStatusText = (status: string) => {
+    switch (status) {
+      case 'created': return 'Đã tạo';
+      case 'assigned': return 'Đã phân công';
+      case 'in_progress': return 'Đang xử lý';
+      case 'completed': return 'Hoàn thành';
+      case 'rejected': return 'Từ chối';
+      default: return status;
+    }
+  };
+
+  // Chuyển đổi trạng thái thành màu sắc
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'created': return 'default';
+      case 'assigned': return 'blue';
+      case 'in_progress': return 'processing';
+      case 'completed': return 'success';
+      case 'rejected': return 'error';
+      default: return 'default';
+    }
+  };
+
+  // Lấy tên người dùng từ địa chỉ
+  const getUsernameFromAddress = (address: string) => {
+    const user = users.find(u => u.walletAddress === address);
+    return user ? user.username : address.substring(0, 6) + '...' + address.substring(address.length - 4);
   };
 
   if (success) {
     return (
       <Result
         status="success"
-        title="Phân công Task thành công!"
-        subTitle="Task đã được phân công thành công và sẽ được thông báo đến người thực hiện."
+        title="Phân công nhiệm vụ thành công!"
+        subTitle="Nhiệm vụ đã được phân công và thông báo đến người thực hiện."
         extra={[
           <Button type="primary" key="console" onClick={() => navigate('/task-management')}>
-            Quay lại Quản lý Task
+            Quay lại Quản lý Nhiệm vụ
           </Button>
         ]}
       />
     );
   }
 
-  if (loading) {
+  if (loading || !currentTask) {
     return (
       <div style={{ textAlign: 'center', padding: '50px' }}>
         <Spin size="large" />
@@ -241,99 +166,76 @@ const AssignTask: React.FC = () => {
   }
 
   return (
-    <div className="assign-task-container">
+    <div>
       <Card>
         <Space direction="vertical" style={{ width: '100%' }} size="large">
           <Title level={2}>
             <Space>
               <TeamOutlined />
-              Phân công Task
+              Phân công nhiệm vụ
             </Space>
           </Title>
-
-          <Divider />
+          <Paragraph type="secondary">
+            Chỉ định nhân viên để thực hiện nhiệm vụ này. Sau khi phân công, nhân viên sẽ được thông báo về nhiệm vụ mới.
+          </Paragraph>
 
           <Row gutter={24}>
-            <Col span={task ? 12 : 24}>
-              <Form
-                form={form}
-                layout="vertical"
-                onFinish={handleAssignTask}
-                requiredMark={false}
-              >
-                {!task && (
+            <Col span={12}>
+              {renderTaskDetailsCard()}
+            </Col>
+            <Col span={12}>
+              <Card title="Chỉ định người thực hiện" type="inner">
+                <Form
+                  form={form}
+                  layout="vertical"
+                  onFinish={handleAssignTask}
+                >
                   <Form.Item
-                    name="taskId"
-                    label="Chọn Task"
-                    rules={[{ required: true, message: 'Vui lòng chọn task' }]}
+                    name="assignee"
+                    label="Chọn người thực hiện"
+                    rules={[{ required: true, message: 'Vui lòng chọn người thực hiện!' }]}
                   >
                     <Select
-                      placeholder="Chọn task cần phân công"
-                      optionFilterProp="children"
-                      showSearch
+                      placeholder="Chọn một nhân viên"
+                      optionLabelProp="label"
+                      disabled={submitting}
                     >
-                      <Option value="1">Task #1: Implement Smart Contract</Option>
-                      <Option value="5">Task #5: Write Documentation</Option>
+                      {eligibleUsers.map(user => (
+                        <Option
+                          key={user.walletAddress}
+                          value={user.walletAddress}
+                          label={user.username}
+                        >
+                          <Space>
+                            <Avatar icon={<UserOutlined />} size="small" />
+                            <Text>{user.username}</Text>
+                            <Text type="secondary">({user.walletAddress.substring(0, 6)}...{user.walletAddress.substring(user.walletAddress.length - 4)})</Text>
+                          </Space>
+                        </Option>
+                      ))}
                     </Select>
                   </Form.Item>
-                )}
 
-                <Form.Item
-                  name="assignee"
-                  label="Người thực hiện"
-                  rules={[{ required: true, message: 'Vui lòng chọn người thực hiện' }]}
-                >
-                  <Select
-                    placeholder="Chọn người thực hiện task"
-                    optionFilterProp="children"
-                    showSearch
-                  >
-                    {users.map(user => (
-                      <Option key={user.id} value={user.id}>
-                        <Space>
-                          <Avatar size="small" icon={<UserOutlined />} />
-                          {user.username}
-                          <Tag color="blue">{user.assignedTasksCount} task</Tag>
-                        </Space>
-                      </Option>
-                    ))}
-                  </Select>
-                </Form.Item>
+                  <Divider />
 
-                <Form.Item
-                  name="deadline"
-                  label="Hạn hoàn thành"
-                  rules={[{ required: true, message: 'Vui lòng chọn hạn hoàn thành' }]}
-                >
-                  <DatePicker 
-                    style={{ width: '100%' }} 
-                    format="DD/MM/YYYY"
-                    disabledDate={current => {
-                      // Không cho phép chọn ngày trong quá khứ
-                      return current && current < moment().startOf('day');
-                    }}
-                  />
-                </Form.Item>
-
-                <Form.Item>
-                  <Button 
-                    type="primary" 
-                    htmlType="submit" 
-                    icon={<SendOutlined />} 
-                    loading={submitting}
-                    block
-                  >
-                    Phân công Task
-                  </Button>
-                </Form.Item>
-              </Form>
+                  <Form.Item>
+                    <Space>
+                      <Button
+                        type="primary"
+                        htmlType="submit"
+                        icon={<SendOutlined />}
+                        loading={submitting}
+                      >
+                        Phân công
+                      </Button>
+                      <Button onClick={() => navigate('/task-management')}>
+                        Hủy
+                      </Button>
+                    </Space>
+                  </Form.Item>
+                </Form>
+              </Card>
             </Col>
-            
-            {task && (
-              <Col span={12}>
-                {renderTaskDetailsCard()}
-              </Col>
-            )}
           </Row>
         </Space>
       </Card>
